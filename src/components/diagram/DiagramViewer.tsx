@@ -37,9 +37,13 @@ export function DiagramViewer({ code, theme = "default", zoom = 1 }: DiagramView
     render();
   }, [code, theme]);
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-full">
+  return (
+    <div 
+      ref={containerRef}
+      className="w-full h-full flex items-center justify-center p-8 overflow-auto"
+      style={{ transform: `scale(${zoom})`, transformOrigin: "center" }}
+    >
+      {error && (
         <div className="glass-panel p-6 max-w-md text-center space-y-3">
           <div className="w-12 h-12 bg-destructive/20 rounded-full flex items-center justify-center mx-auto">
             <AlertCircle className="w-6 h-6 text-destructive" />
@@ -47,24 +51,16 @@ export function DiagramViewer({ code, theme = "default", zoom = 1 }: DiagramView
           <h3 className="text-lg font-semibold">Rendering Error</h3>
           <p className="text-sm text-muted-foreground">{error}</p>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  if (isLoading && code) {
-    return (
-      <div className="flex items-center justify-center h-full">
+      {!error && isLoading && code && (
         <div className="flex flex-col items-center gap-3">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-muted-foreground">Rendering diagram...</p>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  if (!code) {
-    return (
-      <div className="flex items-center justify-center h-full">
+      {!error && !code && (
         <div className="text-center space-y-3 max-w-md">
           <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
             <span className="text-3xl">📊</span>
@@ -74,17 +70,13 @@ export function DiagramViewer({ code, theme = "default", zoom = 1 }: DiagramView
             Start a conversation with Archie to generate your first system diagram
           </p>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  return (
-    <div 
-      ref={containerRef}
-      className="w-full h-full flex items-center justify-center p-8 overflow-auto"
-      style={{ transform: `scale(${zoom})`, transformOrigin: "center" }}
-    >
-      <div id="diagram-svg-container" className="animate-scale-in" />
+      <div 
+        id="diagram-svg-container" 
+        className="animate-scale-in"
+        style={{ display: error || !code ? 'none' : 'block' }}
+      />
     </div>
   );
 }
