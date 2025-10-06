@@ -13,6 +13,9 @@ export function DiagramViewer({ code, theme = "default", zoom = 1 }: DiagramView
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const render = async () => {
@@ -37,11 +40,44 @@ export function DiagramViewer({ code, theme = "default", zoom = 1 }: DiagramView
     render();
   }, [code, theme]);
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button === 0 && code) { // Left click only and only when diagram exists
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) {
+      setPan({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y,
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (code && e.ctrlKey) {
+      e.preventDefault();
+    }
+  };
+
   return (
     <div 
       ref={containerRef}
-      className="w-full h-full flex items-center justify-center p-8 overflow-auto"
-      style={{ transform: `scale(${zoom})`, transformOrigin: "center" }}
+      className="w-full h-full flex items-center justify-center p-8 overflow-hidden select-none"
+      style={{ 
+        cursor: isDragging ? 'grabbing' : code ? 'grab' : 'default',
+      }}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      onWheel={handleWheel}
     >
       {error && (
         <div className="glass-panel p-6 max-w-md text-center space-y-3">
@@ -75,7 +111,12 @@ export function DiagramViewer({ code, theme = "default", zoom = 1 }: DiagramView
       <div 
         id="diagram-svg-container" 
         className="animate-scale-in"
-        style={{ display: error || !code ? 'none' : 'block' }}
+        style={{ 
+          display: error || !code ? 'none' : 'block',
+          transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
+          transformOrigin: 'center',
+          transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+        }}
       />
     </div>
   );

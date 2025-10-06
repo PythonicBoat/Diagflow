@@ -8,7 +8,62 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Diagflow Dark Theme - Deep space gradients with purple/blue accents */
+    /* Diagflow Light Theme - Clean off-white with emerald/teal accents */
+    --background: 40 20% 97%;
+    --background-secondary: 40 15% 94%;
+    --foreground: 240 10% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+
+    --primary: 168 76% 42%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 168 76% 52%;
+
+    --secondary: 40 15% 90%;
+    --secondary-foreground: 240 10% 10%;
+
+    --muted: 40 10% 92%;
+    --muted-foreground: 240 5% 45%;
+
+    --accent: 180 84% 45%;
+    --accent-foreground: 0 0% 100%;
+    --accent-glow: 180 84% 55%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 10% 88%;
+    --input: 240 10% 90%;
+    --ring: 168 76% 42%;
+
+    --radius: 0.75rem;
+
+    /* Glassmorphism effects */
+    --glass-background: 0 0% 100% / 0.7;
+    --glass-border: 240 10% 85% / 0.5;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(168 76% 42%), hsl(180 84% 45%));
+    --gradient-background: radial-gradient(ellipse at top, hsl(168 50% 85% / 0.4), transparent 50%),
+                          radial-gradient(ellipse at bottom right, hsl(180 50% 85% / 0.3), transparent 50%);
+    --gradient-glow: radial-gradient(circle at center, hsl(168 76% 50% / 0.12), transparent 70%);
+
+    /* Shadows */
+    --shadow-glass: 0 8px 32px hsl(240 10% 0% / 0.08);
+    --shadow-glow: 0 0 40px hsl(168 76% 42% / 0.2);
+    --shadow-elevation: 0 20px 60px hsl(240 10% 0% / 0.1);
+
+    /* Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .dark {
+    /* Diagflow Dark Theme - Deep space gradients with emerald/teal accents */
     --background: 240 10% 3.9%;
     --background-secondary: 240 8% 8%;
     --foreground: 210 40% 98%;
@@ -19,9 +74,9 @@ All colors MUST be HSL.
     --popover: 240 10% 8%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 263 70% 60%;
+    --primary: 168 76% 52%;
     --primary-foreground: 210 40% 98%;
-    --primary-glow: 263 80% 70%;
+    --primary-glow: 168 86% 62%;
 
     --secondary: 240 10% 15%;
     --secondary-foreground: 210 40% 98%;
@@ -29,16 +84,16 @@ All colors MUST be HSL.
     --muted: 240 8% 12%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217 91% 60%;
+    --accent: 180 84% 55%;
     --accent-foreground: 210 40% 98%;
-    --accent-glow: 217 91% 70%;
+    --accent-glow: 180 94% 65%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 240 10% 18%;
     --input: 240 10% 15%;
-    --ring: 263 70% 60%;
+    --ring: 168 76% 52%;
 
     --radius: 0.75rem;
 
@@ -47,14 +102,14 @@ All colors MUST be HSL.
     --glass-border: 240 10% 25% / 0.2;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(263 70% 60%), hsl(217 91% 60%));
-    --gradient-background: radial-gradient(ellipse at top, hsl(263 50% 15% / 0.3), transparent 50%),
-                          radial-gradient(ellipse at bottom right, hsl(217 50% 15% / 0.2), transparent 50%);
-    --gradient-glow: radial-gradient(circle at center, hsl(263 80% 60% / 0.15), transparent 70%);
+    --gradient-primary: linear-gradient(135deg, hsl(168 76% 52%), hsl(180 84% 55%));
+    --gradient-background: radial-gradient(ellipse at top, hsl(168 50% 15% / 0.3), transparent 50%),
+                          radial-gradient(ellipse at bottom right, hsl(180 50% 15% / 0.2), transparent 50%);
+    --gradient-glow: radial-gradient(circle at center, hsl(168 86% 60% / 0.15), transparent 70%);
 
     /* Shadows */
     --shadow-glass: 0 8px 32px hsl(240 10% 0% / 0.4);
-    --shadow-glow: 0 0 40px hsl(263 70% 60% / 0.3);
+    --shadow-glow: 0 0 40px hsl(168 76% 52% / 0.3);
     --shadow-elevation: 0 20px 60px hsl(240 10% 0% / 0.6);
 
     /* Transitions */

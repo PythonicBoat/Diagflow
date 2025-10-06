@@ -24,6 +24,8 @@ import {
   Maximize2,
   Minimize2,
   Workflow,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 const Index = () => {
@@ -36,6 +38,7 @@ const Index = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   // Modal states
   const [showSettings, setShowSettings] = useState(false);
@@ -59,7 +62,14 @@ const Index = () => {
     setCurrentDiagram(savedDiagram);
     setDiagramHistory(savedHistory);
     setHistoryIndex(savedIndex);
-  }, []);
+
+    // Apply dark mode class
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -256,6 +266,10 @@ const Index = () => {
     }
   };
 
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
       {/* Gradient Background */}
@@ -310,6 +324,7 @@ const Index = () => {
               size="sm"
               onClick={() => setShowHelp(true)}
               className="glass-panel"
+              title="Getting Started Guide"
             >
               <HelpCircle className="w-4 h-4" />
             </Button>
@@ -317,8 +332,23 @@ const Index = () => {
             <Button
               variant="ghost"
               size="sm"
+              onClick={toggleTheme}
+              className="glass-panel"
+              title="Toggle Theme"
+            >
+              {isDarkMode ? (
+                <Sun className="w-4 h-4" />
+              ) : (
+                <Moon className="w-4 h-4" />
+              )}
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={toggleFullscreen}
               className="glass-panel"
+              title="Toggle Fullscreen"
             >
               {isFullscreen ? (
                 <Minimize2 className="w-4 h-4" />
