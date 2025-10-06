@@ -26,6 +26,7 @@ import {
   Workflow,
   Moon,
   Sun,
+  RotateCcw,
 } from "lucide-react";
 import { Github } from "lucide-react";
 import { CreditsModal } from "@/components/modals/CreditsModal";
@@ -47,7 +48,12 @@ const Index = () => {
   const [chatWidth, setChatWidth] = useState<number>(() => {
     try {
       const saved = localStorage.getItem("diagflow:chatWidth");
-      return saved ? Number(saved) : 400;
+      if (saved) return Number(saved);
+      // Default to 33% of the viewport width (respecting MIN_CHAT_WIDTH)
+      if (typeof window !== "undefined") {
+        return Math.max(MIN_CHAT_WIDTH, Math.floor(window.innerWidth * 0.33));
+      }
+      return 400;
     } catch {
       return 400;
     }
@@ -155,7 +161,7 @@ const Index = () => {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "?" && !e.metaKey && !e.ctrlKey) {
+      if (e.key === "?" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setShowHelp(true);
       }
@@ -316,6 +322,18 @@ const Index = () => {
       storage.saveHistoryIndex(newIndex);
       storage.saveCurrentDiagram(diagramHistory[newIndex].code);
     }
+  };
+
+  const handleRefreshChat = () => {
+    setMessages([]);
+    storage.saveChatHistory([]);
+    setCurrentDiagram("");
+    storage.saveCurrentDiagram("");
+    setIsGenerating(false);
+    toast({
+      title: "Chat reset",
+      description: "Conversation cleared. Diagram history is still available.",
+    });
   };
 
   const handleRestoreHistory = (index: number) => {
@@ -481,6 +499,23 @@ const Index = () => {
           style={{ width: `${chatWidth}px` }}
           className="flex flex-col border-r border-white/10 min-w-[200px] max-w-[40vw]"
         >
+          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+            <span className="text-sm font-semibold tracking-wide uppercase text-muted-foreground/80">
+              Conversation
+            </span>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="gap-2"
+              onClick={handleRefreshChat}
+              disabled={isGenerating}
+              title="Start a new conversation"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span>Reset</span>
+            </Button>
+          </div>
+
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 && (

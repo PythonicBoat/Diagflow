@@ -66,7 +66,10 @@ export function HelpModal({ open, onOpenChange }: HelpModalProps) {
 
         <div className="mt-6 p-4 rounded-lg bg-primary/10 border border-primary/20">
           <p className="text-sm text-muted-foreground">
-            <strong className="text-foreground">Tip:</strong> Press <kbd className="px-2 py-1 text-xs font-semibold bg-muted rounded border border-border">?</kbd> anytime for keyboard shortcuts
+            <strong className="text-foreground">Tip:</strong> Press <kbd className="px-2 py-1 text-xs font-semibold bg-muted rounded border border-border">Ctrl</kbd>
+            <span className="px-1 font-semibold">+</span>
+            <kbd className="px-2 py-1 text-xs font-semibold bg-muted rounded border border-border">?</kbd>
+            anytime for keyboard shortcuts
           </p>
         </div>
       </DialogContent>
