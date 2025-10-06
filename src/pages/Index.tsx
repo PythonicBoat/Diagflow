@@ -27,6 +27,8 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
+import { Github } from "lucide-react";
+import { CreditsModal } from "@/components/modals/CreditsModal";
 
 const Index = () => {
   // State
@@ -40,6 +42,79 @@ const Index = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
+  // Chat column sizing (resizable, max 40% of viewport)
+  const MIN_CHAT_WIDTH = 280; // px
+  const [chatWidth, setChatWidth] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem("diagflow:chatWidth");
+      return saved ? Number(saved) : 400;
+    } catch {
+      return 400;
+    }
+  });
+  const isResizingRef = useRef(false);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(0);
+  const latestWidthRef = useRef(chatWidth);
+
+  // Helper to clamp width to [MIN_CHAT_WIDTH, 40vw]
+  const clampWidth = (w: number) => {
+    const max = Math.floor(window.innerWidth * 0.4);
+    return Math.max(MIN_CHAT_WIDTH, Math.min(w, max));
+  };
+
+  useEffect(() => {
+    latestWidthRef.current = chatWidth;
+    try {
+      localStorage.setItem("diagflow:chatWidth", String(chatWidth));
+    } catch {}
+  }, [chatWidth]);
+
+  useEffect(() => {
+    // Ensure saved width doesn't exceed 40% when window resizes
+    const onResize = () => {
+      setChatWidth((w) => clampWidth(w));
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const onMouseMove = (e: MouseEvent) => {
+    if (!isResizingRef.current) return;
+    const dx = e.clientX - startXRef.current;
+    const newW = clampWidth(startWidthRef.current + dx);
+    setChatWidth(newW);
+    latestWidthRef.current = newW;
+  };
+
+  const onMouseUp = () => {
+    if (!isResizingRef.current) return;
+    isResizingRef.current = false;
+    document.body.style.cursor = "";
+    window.removeEventListener("mousemove", onMouseMove);
+    window.removeEventListener("mouseup", onMouseUp);
+  };
+
+  const startResize = (clientX: number) => {
+    isResizingRef.current = true;
+    startXRef.current = clientX;
+    startWidthRef.current = latestWidthRef.current || chatWidth;
+    document.body.style.cursor = "col-resize";
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
+
+  const handleMouseDownResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    startResize(e.clientX);
+  };
+
+  const handleTouchStartResize = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    if (!t) return;
+    startResize(t.clientX);
+  };
+
   // Modal states
   const [showSettings, setShowSettings] = useState(false);
   const [showExamples, setShowExamples] = useState(false);
@@ -47,6 +122,7 @@ const Index = () => {
   const [showExport, setShowExport] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [showCredits, setShowCredits] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -111,7 +187,8 @@ const Index = () => {
         e.preventDefault();
         handleZoomReset();
       }
-      if (e.key === "f" && !e.metaKey && !e.ctrlKey) {
+      // Fullscreen: Ctrl/Cmd + F
+      if ((e.key === "f" || e.key === "F") && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         toggleFullscreen();
       }
@@ -255,6 +332,17 @@ const Index = () => {
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.1, 2));
   const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.1, 0.5));
   const handleZoomReset = () => setZoom(1);
+  // Allow zoom range from 0.1 to 5 (10% to 500%)
+  const handleZoomInExpanded = () => setZoom((prev) => Math.min(prev + 0.1, 5));
+  const handleZoomOutExpanded = () => setZoom((prev) => Math.max(prev - 0.1, 0.1));
+  const handleZoomResetExpanded = () => setZoom(1);
+
+  const handleWheelZoom = (newZoom: number) => {
+    setZoom((prev) => {
+      const clamped = Math.max(0.1, Math.min(newZoom, 5));
+      return clamped;
+    });
+  };
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -270,6 +358,23 @@ const Index = () => {
     setIsDarkMode(!isDarkMode);
   };
 
+  // Rotating text helper for the welcome panel
+  function RotatingText({ phrases, interval = 3000 }: { phrases: string[]; interval?: number }) {
+    const [index, setIndex] = useState(0);
+
+    useEffect(() => {
+      if (!phrases || phrases.length === 0) return;
+      const t = setInterval(() => setIndex((i) => (i + 1) % phrases.length), interval);
+      return () => clearInterval(t);
+    }, [phrases, interval]);
+
+    return (
+      <span className="inline-block text-foreground font-semibold transition-opacity duration-300">
+        {phrases[index]}
+      </span>
+    );
+  }
+
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
       {/* Gradient Background */}
@@ -284,7 +389,6 @@ const Index = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold gradient-text">Diagflow</h1>
-              <p className="text-xs text-muted-foreground">AI-Powered System Design</p>
             </div>
           </div>
 
@@ -332,6 +436,16 @@ const Index = () => {
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => setShowCredits(true)}
+              className="glass-panel"
+              title="Credits & Author"
+            >
+              <Github className="w-4 h-4" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={toggleTheme}
               className="glass-panel"
               title="Toggle Theme"
@@ -362,8 +476,11 @@ const Index = () => {
 
       {/* Main Content */}
       <div className="relative z-10 flex-1 flex overflow-hidden">
-        {/* Chat Column */}
-        <div className="w-[400px] flex flex-col border-r border-white/10">
+        {/* Chat Column (resizable) */}
+        <div
+          style={{ width: `${chatWidth}px` }}
+          className="flex flex-col border-r border-white/10 min-w-[200px] max-w-[40vw]"
+        >
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 && (
@@ -372,10 +489,21 @@ const Index = () => {
                   <div className="w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto">
                     <Workflow className="w-10 h-10 text-white" />
                   </div>
-                  <h2 className="text-xl font-semibold">Welcome to Diagflow</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Describe your system architecture and let Archie transform it into beautiful diagrams
-                  </p>
+                  <h2 className="text-xl font-semibold opacity-90" style={{ fontSize: 'calc(1.25rem + 2pt)' }}>Text to Flow</h2>
+                  <div className="text-muted-foreground" style={{ fontSize: 'calc(0.875rem + 2pt)', opacity: 0.80 }}>
+                    <span className="font-medium">Ask Archie to</span>
+                    <span className="ml-2">
+                      <RotatingText
+                      phrases={[
+                        "design your system",
+                        "create flowcharts",
+                        "produce illustrations",
+                        "generate architecture diagrams",
+                        "explain data flows",
+                      ]}
+                      />
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
@@ -393,8 +521,28 @@ const Index = () => {
             <ChatInput
               onSend={handleSendMessage}
               onShowExamples={() => setShowExamples(true)}
+              onOpenSettings={() => setShowSettings(true)}
+              hasApiKey={Boolean(settings.geminiApiKey)}
               disabled={isGenerating}
             />
+          </div>
+        </div>
+
+        {/* Resize handle (thin visible bar + stacked <> icon for affordance) */}
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          onMouseDown={handleMouseDownResize}
+          onTouchStart={handleTouchStartResize}
+          className="w-6 relative flex items-center justify-center cursor-col-resize select-none"
+        >
+          {/* thin visual bar */}
+          <div className="w-4 h-10 bg-white/5 rounded" />
+
+          {/* stacked < > icons to indicate draggable divider (pointer-events-none so drag still works) */}
+          <div className="absolute flex flex-col items-center justify-center pointer-events-none gap-1">
+            <span className="text-[10px] leading-none text-muted-foreground/70">{'<'}</span>
+            <span className="text-[10px] leading-none text-muted-foreground/70">{'>'}</span>
           </div>
         </div>
 
@@ -414,9 +562,9 @@ const Index = () => {
 
             <ZoomControls
               zoom={zoom}
-              onZoomIn={handleZoomIn}
-              onZoomOut={handleZoomOut}
-              onZoomReset={handleZoomReset}
+              onZoomIn={handleZoomInExpanded}
+              onZoomOut={handleZoomOutExpanded}
+              onZoomReset={handleZoomResetExpanded}
               onFullscreen={toggleFullscreen}
             />
           </div>
@@ -427,6 +575,7 @@ const Index = () => {
               code={currentDiagram}
               theme={settings.theme}
               zoom={zoom}
+              onWheelZoom={handleWheelZoom}
             />
           </div>
         </div>
@@ -469,6 +618,11 @@ const Index = () => {
       <HelpModal
         open={showHelp}
         onOpenChange={setShowHelp}
+      />
+
+      <CreditsModal
+        open={showCredits}
+        onOpenChange={setShowCredits}
       />
     </div>
   );

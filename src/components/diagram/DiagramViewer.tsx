@@ -7,9 +7,10 @@ interface DiagramViewerProps {
   code: string;
   theme?: MermaidTheme;
   zoom?: number;
+  onWheelZoom?: (newZoom: number, centerX?: number, centerY?: number) => void;
 }
 
-export function DiagramViewer({ code, theme = "default", zoom = 1 }: DiagramViewerProps) {
+export function DiagramViewer({ code, theme = "default", zoom = 1, onWheelZoom }: DiagramViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,8 +62,25 @@ export function DiagramViewer({ code, theme = "default", zoom = 1 }: DiagramView
   };
 
   const handleWheel = (e: React.WheelEvent) => {
-    if (code && e.ctrlKey) {
-      e.preventDefault();
+    // If user scrolls with ctrl (or just scroll) while the diagram exists,
+    // attempt to zoom. We use shift+wheel for zoom as well or ctrl+wheel.
+    if (!code) return;
+
+    const isZoomGesture = e.ctrlKey || e.shiftKey || Math.abs(e.deltaY) > 0;
+    if (!isZoomGesture) return;
+
+    e.preventDefault();
+    // deltaY > 0 means scroll down (zoom out)
+    const delta = -e.deltaY;
+    const scaleAmount = delta > 0 ? 1.075 : 0.93; // zoom factor per wheel event
+    const newZoom = Math.max(0.1, Math.min((zoom || 1) * scaleAmount, 5));
+
+    if (onWheelZoom) {
+      // compute pointer position relative to container center
+      const rect = containerRef.current?.getBoundingClientRect();
+      const cx = rect ? e.clientX - rect.left : undefined;
+      const cy = rect ? e.clientY - rect.top : undefined;
+      onWheelZoom(newZoom, cx, cy);
     }
   };
 
@@ -98,12 +116,12 @@ export function DiagramViewer({ code, theme = "default", zoom = 1 }: DiagramView
 
       {!error && !code && (
         <div className="text-center space-y-3 max-w-md">
-          <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
-            <span className="text-3xl">📊</span>
+          <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
+            <span className="text-6xl">🦥</span>
           </div>
-          <h3 className="text-lg font-semibold">No Diagram Yet</h3>
+          <h3 className="text-lg font-semibold">Nothing here Yet</h3>
           <p className="text-sm text-muted-foreground">
-            Start a conversation with Archie to generate your first system diagram
+            Start a conversation with Archie to generate your first illustration
           </p>
         </div>
       )}

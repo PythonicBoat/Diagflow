@@ -1,3 +1,6 @@
+/* Import Inter (used by many modern UIs, similar to ChatGPT's font) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -19,9 +22,10 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 10%;
 
-    --primary: 168 76% 42%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 168 76% 52%;
+  /* Brand primary changed to warm orange for better contrast */
+  --primary: 28 100% 48%; /* orange */
+  --primary-foreground: 0 0% 100%;
+  --primary-glow: 28 100% 58%;
 
     --secondary: 40 15% 90%;
     --secondary-foreground: 240 10% 10%;
@@ -29,16 +33,17 @@ All colors MUST be HSL.
     --muted: 40 10% 92%;
     --muted-foreground: 240 5% 45%;
 
-    --accent: 180 84% 45%;
-    --accent-foreground: 0 0% 100%;
-    --accent-glow: 180 84% 55%;
+  /* Accent moved towards a warmer amber to harmonize with primary */
+  --accent: 30 90% 45%;
+  --accent-foreground: 0 0% 100%;
+  --accent-glow: 30 90% 55%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 240 10% 88%;
     --input: 240 10% 90%;
-    --ring: 168 76% 42%;
+  --ring: 28 100% 48%;
 
     --radius: 0.75rem;
 
@@ -47,14 +52,16 @@ All colors MUST be HSL.
     --glass-border: 240 10% 85% / 0.5;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(168 76% 42%), hsl(180 84% 45%));
-    --gradient-background: radial-gradient(ellipse at top, hsl(168 50% 85% / 0.4), transparent 50%),
-                          radial-gradient(ellipse at bottom right, hsl(180 50% 85% / 0.3), transparent 50%);
-    --gradient-glow: radial-gradient(circle at center, hsl(168 76% 50% / 0.12), transparent 70%);
+  --gradient-primary: linear-gradient(135deg, hsl(28 100% 48%), hsl(32 100% 50%));
+  /* Soft warm circular glow at the top + subtle bottom-right wash */
+  --gradient-background: radial-gradient(ellipse at top center, hsl(28 100% 88% / 0.32), transparent 40%),
+                        radial-gradient(ellipse at bottom right, hsl(32 60% 95% / 0.25), transparent 50%);
+  /* Small focused glow toward the top-left for UI depth */
+  --gradient-glow: radial-gradient(circle at 15% 12%, hsl(28 100% 60% / 0.18), transparent 60%);
 
     /* Shadows */
-    --shadow-glass: 0 8px 32px hsl(240 10% 0% / 0.08);
-    --shadow-glow: 0 0 40px hsl(168 76% 42% / 0.2);
+  --shadow-glass: 0 8px 32px hsl(240 10% 0% / 0.08);
+  --shadow-glow: 0 0 40px hsl(28 100% 48% / 0.2);
     --shadow-elevation: 0 20px 60px hsl(240 10% 0% / 0.1);
 
     /* Transitions */
@@ -74,9 +81,10 @@ All colors MUST be HSL.
     --popover: 240 10% 8%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 168 76% 52%;
-    --primary-foreground: 210 40% 98%;
-    --primary-glow: 168 86% 62%;
+  /* Slightly darker orange for dark mode to improve contrast */
+  --primary: 28 100% 50%;
+  --primary-foreground: 210 40% 98%;
+  --primary-glow: 28 100% 60%;
 
     --secondary: 240 10% 15%;
     --secondary-foreground: 210 40% 98%;
@@ -84,16 +92,16 @@ All colors MUST be HSL.
     --muted: 240 8% 12%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 180 84% 55%;
-    --accent-foreground: 210 40% 98%;
-    --accent-glow: 180 94% 65%;
+  --accent: 30 90% 52%;
+  --accent-foreground: 210 40% 98%;
+  --accent-glow: 30 90% 60%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 240 10% 18%;
     --input: 240 10% 15%;
-    --ring: 168 76% 52%;
+  --ring: 28 100% 50%;
 
     --radius: 0.75rem;
 
@@ -102,14 +110,15 @@ All colors MUST be HSL.
     --glass-border: 240 10% 25% / 0.2;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(168 76% 52%), hsl(180 84% 55%));
-    --gradient-background: radial-gradient(ellipse at top, hsl(168 50% 15% / 0.3), transparent 50%),
-                          radial-gradient(ellipse at bottom right, hsl(180 50% 15% / 0.2), transparent 50%);
-    --gradient-glow: radial-gradient(circle at center, hsl(168 86% 60% / 0.15), transparent 70%);
+  --gradient-primary: linear-gradient(135deg, hsl(28 100% 50%), hsl(32 100% 52%));
+  /* Dark theme: gentle warm halo at the top to add depth without brightening the whole canvas */
+  --gradient-background: radial-gradient(ellipse at top center, hsl(28 100% 28% / 0.20), transparent 35%),
+              radial-gradient(ellipse at bottom right, hsl(32 40% 12% / 0.12), transparent 45%);
+  --gradient-glow: radial-gradient(circle at 12% 10%, hsl(28 100% 44% / 0.12), transparent 60%);
 
     /* Shadows */
-    --shadow-glass: 0 8px 32px hsl(240 10% 0% / 0.4);
-    --shadow-glow: 0 0 40px hsl(168 76% 52% / 0.3);
+  --shadow-glass: 0 8px 32px hsl(240 10% 0% / 0.4);
+  --shadow-glow: 0 0 40px hsl(28 100% 50% / 0.3);
     --shadow-elevation: 0 20px 60px hsl(240 10% 0% / 0.6);
 
     /* Transitions */
@@ -125,7 +134,29 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Themed scrollbar matching primary orange */
+  /* Webkit browsers */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(28 100% 48% / 0.95);
+    border-radius: 999px;
+    border: 3px solid hsl(var(--background));
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(28 100% 48% / 0.95) hsl(var(--background));
   }
 }
 

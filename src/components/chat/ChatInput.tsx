@@ -6,6 +6,8 @@ import { Send, Sparkles } from "lucide-react";
 interface ChatInputProps {
   onSend: (message: string) => void;
   onShowExamples: () => void;
+  onOpenSettings: () => void;
+  hasApiKey: boolean;
   disabled?: boolean;
   placeholder?: string;
 }
@@ -13,6 +15,8 @@ interface ChatInputProps {
 export function ChatInput({
   onSend,
   onShowExamples,
+  onOpenSettings,
+  hasApiKey,
   disabled,
   placeholder = "Describe your system architecture...",
 }: ChatInputProps) {
@@ -45,13 +49,20 @@ export function ChatInput({
 
       <div className="flex items-center gap-2">
         <Button
-          onClick={onShowExamples}
+          onClick={() => {
+            if (hasApiKey) {
+              onShowExamples();
+            } else {
+              onOpenSettings();
+            }
+          }}
           variant="outline"
           size="sm"
           className="flex-shrink-0"
+          title={hasApiKey ? "Examples" : "Set API Key"}
         >
           <Sparkles className="w-4 h-4 mr-2" />
-          Examples
+          {hasApiKey ? "Examples" : "Set API Key"}
         </Button>
 
         <Button

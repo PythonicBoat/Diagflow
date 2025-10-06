@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Code2, Download, Undo2, Redo2 } from "lucide-react";
+import { Code2, Download, Undo2, Redo2, Upload } from "lucide-react";
 
 interface DiagramControlsProps {
   onUndo: () => void;
@@ -52,9 +52,10 @@ export function DiagramControls({
         onClick={onViewCode}
         disabled={disabled}
         className="glass-panel hover-glow"
+        title="Import or upload diagram code"
       >
-        <Code2 className="w-4 h-4 mr-2" />
-        View Code
+        <Upload className="w-4 h-4 mr-2" />
+        Import
       </Button>
 
       <Button

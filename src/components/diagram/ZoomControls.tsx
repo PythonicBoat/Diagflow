@@ -22,7 +22,7 @@ export function ZoomControls({
         size="sm"
         variant="ghost"
         onClick={onZoomOut}
-        disabled={zoom <= 0.5}
+        disabled={zoom <= 0.1}
         className="h-8 w-8 p-0"
       >
         <ZoomOut className="w-4 h-4" />
@@ -41,7 +41,7 @@ export function ZoomControls({
         size="sm"
         variant="ghost"
         onClick={onZoomIn}
-        disabled={zoom >= 2}
+        disabled={zoom >= 5}
         className="h-8 w-8 p-0"
       >
         <ZoomIn className="w-4 h-4" />
