@@ -37,7 +37,13 @@ const Index = () => {
   const [currentDiagram, setCurrentDiagram] = useState("");
   const [diagramHistory, setDiagramHistory] = useState<DiagramHistoryEntry[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  const [settings, setSettings] = useState<AppSettings>(storage.getSettings());
+  // Initialize settings and optionally hydrate API key from explicit storage slot
+  const initialSettings = storage.getSettings();
+  const storedApiKey = storage.getApiKey();
+  if (storedApiKey && !initialSettings.geminiApiKey) {
+    initialSettings.geminiApiKey = storedApiKey;
+  }
+  const [settings, setSettings] = useState<AppSettings>(initialSettings);
   const [isGenerating, setIsGenerating] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -165,7 +171,7 @@ const Index = () => {
         e.preventDefault();
         setShowHelp(true);
       }
-      if (e.key === "Escape") {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Escape") {
         setShowSettings(false);
         setShowExamples(false);
         setShowCodeView(false);
@@ -181,15 +187,15 @@ const Index = () => {
         e.preventDefault();
         handleRedo();
       }
-      if (e.key === "+" || e.key === "=") {
+      if ((e.metaKey || e.ctrlKey) && (e.key === "+" || e.key === "=")) {
         e.preventDefault();
         handleZoomIn();
       }
-      if (e.key === "-") {
+      if ((e.metaKey || e.ctrlKey) && e.key === "-") {
         e.preventDefault();
         handleZoomOut();
       }
-      if (e.key === "0") {
+      if ((e.metaKey || e.ctrlKey) && e.key === "0") {
         e.preventDefault();
         handleZoomReset();
       }
@@ -281,6 +287,8 @@ const Index = () => {
   const handleSaveSettings = (newSettings: AppSettings) => {
     setSettings(newSettings);
     storage.saveSettings(newSettings);
+    // Persist API key separately for explicit control
+    storage.saveApiKey(newSettings.geminiApiKey);
     toast({
       title: "Settings Saved",
       description: "Your preferences have been updated",

@@ -4,6 +4,7 @@ const STORAGE_KEYS = {
   CHAT_HISTORY: "diagflow_chat_history",
   DIAGRAM_HISTORY: "diagflow_diagram_history",
   SETTINGS: "diagflow_settings",
+  API_KEY: "diagflow_api_key",
   CURRENT_DIAGRAM: "diagflow_current_diagram",
   HISTORY_INDEX: "diagflow_history_index",
 } as const;
@@ -44,6 +45,19 @@ export const storage = {
 
   saveSettings: (settings: AppSettings) => {
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+  },
+
+  // API Key (stored separately for convenience and explicit control)
+  getApiKey: (): string | null => {
+    return localStorage.getItem(STORAGE_KEYS.API_KEY);
+  },
+
+  saveApiKey: (key?: string) => {
+    if (!key) {
+      localStorage.removeItem(STORAGE_KEYS.API_KEY);
+    } else {
+      localStorage.setItem(STORAGE_KEYS.API_KEY, key);
+    }
   },
 
   // Current Diagram
