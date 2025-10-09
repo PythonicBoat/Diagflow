@@ -1,6 +1,7 @@
 import { Message, DiagramResponse } from "@/types/diagflow";
 
-const GEMINI_MODEL = "gemini-2.0-flash";
+export const GEMINI_MODEL = "gemini-2.5-flash-lite";
+export const GEMINI_SUPPORTS_IMAGE_INPUT = true;
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 const SYSTEM_PROMPT = `You are Archie, a professional system design and diagramming assistant.
@@ -13,6 +14,7 @@ Your mission:
    - Favor 2D figure-style styling (rounded silhouettes, subtle depth) when defining Mermaid classes.
   - Maintain professional consistency across diagrams.
   - Ensure every diagram compiles successfully with **Mermaid.js v11.12.0**. Avoid experimental syntax, beta directives, or features introduced after this version.
+    - When the user supplies image attachments (PNG or JPG), inspect them carefully, extract the relevant architectural or workflow details, and incorporate those insights into the generated diagram.
 
 2. **Explanations**
    - Provide a clear, concise natural-language explanation of each diagram.
@@ -42,6 +44,15 @@ Your response must be structured EXACTLY as follows:
 
 Do not include any additional sections or suggestion lists unless the user explicitly requests them.`;
 
+type GeminiPart =
+  | { text: string }
+  | { inlineData: { data: string; mimeType: string } };
+
+type GeminiContent = {
+  role: "user" | "model";
+  parts: GeminiPart[];
+};
+
 export async function generateDiagram(
   apiKey: string,
   userPrompt: string,
@@ -52,14 +63,77 @@ export async function generateDiagram(
     throw new Error("API key is required");
   }
 
-  // Build context with system prompt, history, and current diagram
-  let contextPrompt = SYSTEM_PROMPT + "\n\n";
-  
-  if (currentDiagram) {
-    contextPrompt += `Current diagram:\n\`\`\`mermaid\n${currentDiagram}\n\`\`\`\n\n`;
-  }
+  const trimmedHistory = chatHistory.slice(-10);
 
-  contextPrompt += `User request: ${userPrompt}`;
+  const contents: GeminiContent[] = trimmedHistory
+    .map((message, index) => {
+      const parts: GeminiPart[] = [];
+      const isLatest = index === trimmedHistory.length - 1;
+      const cleanedContent = message.content?.trim();
+
+      if (cleanedContent) {
+        let textContent = cleanedContent;
+        if (message.role === "user" && isLatest && currentDiagram) {
+          textContent = `Current diagram context (Mermaid v11.12.0):\n\`\`\`mermaid\n${currentDiagram}\n\`\`\`\n\nUser request:\n${cleanedContent}`;
+        }
+        parts.push({ text: textContent });
+      } else if (message.role === "user" && isLatest && currentDiagram) {
+        parts.push({
+          text: `Current diagram context (Mermaid v11.12.0):\n\`\`\`mermaid\n${currentDiagram}\n\`\`\``,
+        });
+      }
+
+      if (GEMINI_SUPPORTS_IMAGE_INPUT && message.attachments) {
+        message.attachments.forEach((attachment) => {
+          if (attachment.base64) {
+            parts.push({
+              inlineData: {
+                data: attachment.base64,
+                mimeType: attachment.mimeType,
+              },
+            });
+            parts.push({
+              text: `The user provided an image attachment (${attachment.name}). Extract any architectural or workflow insights relevant to the request from this image.`,
+            });
+          }
+        });
+      }
+
+      if (
+        message.role === "user" &&
+        isLatest &&
+        (!cleanedContent || cleanedContent.length === 0) &&
+        GEMINI_SUPPORTS_IMAGE_INPUT &&
+        message.attachments &&
+        message.attachments.length > 0
+      ) {
+        parts.push({
+          text: "Analyze the attached image(s) and generate or update the diagram accordingly.",
+        });
+      }
+
+      if (parts.length === 0) {
+        return null;
+      }
+
+      return {
+        role: message.role === "assistant" ? "model" : "user",
+        parts,
+      } satisfies GeminiContent;
+    })
+    .filter((entry): entry is GeminiContent => entry !== null);
+
+  if (contents.length === 0) {
+    const fallbackParts: GeminiPart[] = [];
+    if (currentDiagram) {
+      fallbackParts.push({
+        text: `Current diagram context (Mermaid v11.12.0):\n\`\`\`mermaid\n${currentDiagram}\n\`\`\``,
+      });
+    }
+    const sanitizedPrompt = userPrompt.trim().length > 0 ? userPrompt.trim() : "Analyze the provided image(s) and generate the appropriate Mermaid diagram.";
+    fallbackParts.push({ text: sanitizedPrompt });
+    contents.push({ role: "user", parts: fallbackParts });
+  }
 
   const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
     method: "POST",
@@ -67,15 +141,10 @@ export async function generateDiagram(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            {
-              text: contextPrompt,
-            },
-          ],
-        },
-      ],
+      systemInstruction: {
+        parts: [{ text: SYSTEM_PROMPT }],
+      },
+      contents,
       generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 2048,

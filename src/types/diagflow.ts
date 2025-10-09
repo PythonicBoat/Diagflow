@@ -1,7 +1,18 @@
+export interface Attachment {
+  id: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  dataUrl: string;
+  base64: string;
+  source: "upload" | "clipboard";
+}
+
 export interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp?: number;
+  attachments?: Attachment[];
 }
 
 export interface DiagramHistoryEntry {

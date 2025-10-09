@@ -14,7 +14,8 @@ import { HistoryModal } from "@/components/modals/HistoryModal";
 import { HelpModal } from "@/components/modals/HelpModal";
 import { storage } from "@/lib/storage";
 import { generateDiagram } from "@/lib/gemini";
-import { Message, DiagramHistoryEntry, AppSettings } from "@/types/diagflow";
+import { Message, DiagramHistoryEntry, AppSettings, Attachment } from "@/types/diagflow";
+import { GEMINI_SUPPORTS_IMAGE_INPUT } from "@/lib/gemini";
 import { useToast } from "@/hooks/use-toast";
 import {
   Settings,
@@ -54,7 +55,9 @@ const Index = () => {
   const [chatWidth, setChatWidth] = useState<number>(() => {
     try {
       const saved = localStorage.getItem("diagflow:chatWidth");
-      if (saved) return Number(saved);
+      if (saved) {
+        return Number(saved);
+      }
       // Default to 33% of the viewport width (respecting MIN_CHAT_WIDTH)
       if (typeof window !== "undefined") {
         return Math.max(MIN_CHAT_WIDTH, Math.floor(window.innerWidth * 0.33));
@@ -92,7 +95,9 @@ const Index = () => {
   }, []);
 
   const onMouseMove = (e: MouseEvent) => {
-    if (!isResizingRef.current) return;
+    if (!isResizingRef.current) {
+      return;
+    }
     const dx = e.clientX - startXRef.current;
     const newW = clampWidth(startWidthRef.current + dx);
     setChatWidth(newW);
@@ -100,7 +105,9 @@ const Index = () => {
   };
 
   const onMouseUp = () => {
-    if (!isResizingRef.current) return;
+    if (!isResizingRef.current) {
+      return;
+    }
     isResizingRef.current = false;
     document.body.style.cursor = "";
     window.removeEventListener("mousemove", onMouseMove);
@@ -123,7 +130,9 @@ const Index = () => {
 
   const handleTouchStartResize = (e: React.TouchEvent) => {
     const t = e.touches[0];
-    if (!t) return;
+    if (!t) {
+      return;
+    }
     startResize(t.clientX);
   };
 
@@ -210,7 +219,7 @@ const Index = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [historyIndex, diagramHistory]);
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, attachments: Attachment[] = []) => {
     if (!settings.geminiApiKey) {
       toast({
         title: "API Key Required",
@@ -221,13 +230,24 @@ const Index = () => {
       return;
     }
 
+    if (attachments.length > 0 && !GEMINI_SUPPORTS_IMAGE_INPUT) {
+      toast({
+        title: "Image attachments not supported",
+        description: "Switch to a Gemini Flash or Vision model to analyze images.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const userMessage: Message = {
       role: "user",
       content,
       timestamp: Date.now(),
+      attachments: attachments.length > 0 ? attachments : undefined,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const updatedHistory = [...messages, userMessage];
+    setMessages(updatedHistory);
     setIsGenerating(true);
 
     try {
@@ -235,7 +255,7 @@ const Index = () => {
         settings.geminiApiKey,
         content,
         currentDiagram,
-        messages
+        updatedHistory
       );
 
       const assistantMessage: Message = {
@@ -248,7 +268,8 @@ const Index = () => {
         timestamp: Date.now(),
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      const finalHistory = [...updatedHistory, assistantMessage];
+      setMessages(finalHistory);
       setCurrentDiagram(response.code);
 
       // Add to history
@@ -265,8 +286,8 @@ const Index = () => {
         storage.saveHistoryIndex(newHistory.length - 1);
       }
 
-      storage.saveCurrentDiagram(response.code);
-      storage.saveChatHistory([...messages, userMessage, assistantMessage]);
+  storage.saveCurrentDiagram(response.code);
+  storage.saveChatHistory(finalHistory);
 
       toast({
         title: "Diagram Generated",
@@ -364,10 +385,7 @@ const Index = () => {
   const handleZoomResetExpanded = () => setZoom(1);
 
   const handleWheelZoom = (newZoom: number) => {
-    setZoom((prev) => {
-      const clamped = Math.max(0.1, Math.min(newZoom, 5));
-      return clamped;
-    });
+    setZoom(() => Math.max(0.1, Math.min(newZoom, 5)));
   };
 
   const toggleFullscreen = () => {
@@ -389,7 +407,9 @@ const Index = () => {
     const [index, setIndex] = useState(0);
 
     useEffect(() => {
-      if (!phrases || phrases.length === 0) return;
+      if (!phrases || phrases.length === 0) {
+        return;
+      }
       const t = setInterval(() => setIndex((i) => (i + 1) % phrases.length), interval);
       return () => clearInterval(t);
     }, [phrases, interval]);

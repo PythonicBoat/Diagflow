@@ -7,6 +7,7 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === "user";
+  const hasContent = Boolean(message.content && message.content.trim().length > 0);
 
   return (
     <div
@@ -33,17 +34,40 @@ export function ChatMessage({ message }: ChatMessageProps) {
           isUser ? "text-right" : "text-left"
         }`}
       >
-        <div
-          className={`inline-block px-4 py-3 rounded-2xl ${
-            isUser
-              ? "bg-gradient-to-br from-primary to-accent text-white"
-              : "glass-panel"
-          }`}
-        >
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">
-            {message.content}
-          </p>
-        </div>
+        {hasContent && (
+          <div
+            className={`inline-block px-4 py-3 rounded-2xl ${
+              isUser
+                ? "bg-gradient-to-br from-primary to-accent text-white"
+                : "glass-panel"
+            }`}
+          >
+            <p className="text-sm leading-relaxed whitespace-pre-wrap">
+              {message.content}
+            </p>
+          </div>
+        )}
+
+        {message.attachments && message.attachments.length > 0 && (
+          <div
+            className={`mt-2 flex flex-wrap gap-2 ${
+              isUser ? "justify-end" : "justify-start"
+            }`}
+          >
+            {message.attachments.map((attachment) => (
+              <div
+                key={attachment.id}
+                className="overflow-hidden rounded-lg border border-border/60 bg-background/40"
+              >
+                <img
+                  src={attachment.dataUrl}
+                  alt={attachment.name}
+                  className="h-24 w-24 object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        )}
         
         {message.timestamp && (
           <p className="text-xs text-muted-foreground mt-1 px-2">
